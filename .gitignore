@@ -1,0 +1,24 @@
+# PCS local memory (managed by tools/pcs)
+.project-memory/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Node / Next.js
+node_modules/
+.next/
+
+# Python
+__pycache__/
+*.pyc
+backend/.venv/
+.venv/
+
+# Logs
+*.log
+
+# OS / Office
+Thumbs.db
+~$*

@@ -1,0 +1,135 @@
+# Text extract of the signed-off architecture document
+# Source: AI_Hotel_Platform_Management_Visual_Architecture_and_Cycles_v5_Internal_PMS.docx
+# Extracted 2026-10-14 for grep. Diagrams/images are not included. The .docx is authoritative.
+
+
+AI Hotel Booking & Operations Platform
+Management visual blueprint | Architecture • Internal PMS scope • Delivery cycles • Release gates
+Objective: build an AI receptionist and an internally owned, multi-property Property Management System (PMS) for ten hotels. The internal PMS is the operational system of record for inventory, rates and reservations; this is not a mock PMS. Delivery proceeds through core PMS build, controlled pilot and gated rollout.
+1. The platform at a glance
+Architecture principle: The LLM interprets and proposes. The agentic harness constrains and validates. Deterministic internal PMS services execute and own inventory, rates and reservation state; the PMS service response is the authoritative confirmation.
+2. The delivery journey
+Each cycle ends with a demonstrable increment, evidence that acceptance criteria pass, and a go/no-go decision. Calendar dates and effort estimates are intentionally left open until discovery confirms PMS access, hotel policies and integration constraints.
+3. What the agentic harness controls
+ACTION PLANDefines the next permitted step and required information.
+ | SYSTEM PROMPTSSets the agent role, response rules and boundaries.
+ | APPROVED TOOLSRestricts actions to typed, permission-checked services.
+ | VALIDATIONChecks facts, tenant scope, policy and workflow state.
+ | GROUNDED KNOWLEDGEUses approved property information and live booking results.
+ | HUMAN HANDOFFStops safely when uncertain, unsupported or failing.
+ | Guardrail: no prompt can guarantee zero hallucinations. The design makes unsupported output non-authoritative and prevents a model response alone from creating or confirming a booking.
+4. The guest booking process
+5. Delivery cycles and their visible outcomes
+0. Discover  Confirm hotel workflows, PMS landscape, policies, privacy and pilot criteria.  Outcome: Approved scope and decisions.
+1. Foundation + PMS core  Build tenant/property separation, database, dashboard shell, inventory, rates and reservation services.  Outcome: Working internal PMS foundation.
+2. AI harness  Add prompts, action planner, tools, validation and grounded text booking against our internal PMS.  Outcome: Controlled AI booking journey.
+3. WhatsApp  Connect Twilio WhatsApp and verified notifications.  Outcome: Message journey with safe confirmations.
+4. Voice  Connect Twilio Voice and evaluate Conversation Relay/speech providers.  Outcome: Phone demo with handoff.
+5. PMS operations  Expand the internal PMS with front-desk, guest, housekeeping, operational controls and reporting; harden transaction integrity.  Outcome: Internal PMS ready for controlled pilot.
+6. Pilot  Launch with one property under controlled exposure.  Outcome: Measured pilot and operational feedback.
+7. Harden  Complete security, resilience, cost and operational readiness.  Outcome: Repeatable release package.
+8. Scale  Onboard remaining hotels in waves with property-level gates.  Outcome: Ten hotels with monitoring and support.
+6. Release gates
+7. What we will measure
+GUEST EXPERIENCEBooking completion • FAQ correctness • guest satisfaction
+ | OPERATIONAL CONTROLEscalations • handoff time • staff workload
+ | RELIABILITYVerified outcomes • duplicate booking tests • failure recovery
+ | SPEED & COSTVoice latency • model cost per completed interaction
+ | SECURITYTenant isolation • audit completeness • critical findings
+ | SCALE READINESSProperty onboarding time • integration stability • support readiness
+ | 8. Decisions needed before dates can be committed
+Confirm the internal PMS operating scope and whether any hotel requires an external PMS migration/coexistence integration. External PMS/OHIP integration is optional, not the core system of record.
+Confirm whether a tenant represents a hotel group or an individual property and how shared guest profiles are handled.
+Approve booking, amendment, cancellation and escalation policies.
+Confirm Twilio WhatsApp onboarding/templates, voice languages, transfer destinations and recording/retention rules.
+Benchmark model candidates for quality, tool use, multilingual performance, latency and cost before production selection.
+9. Governance and decision
+Approve the layered architecture and outcome-based delivery cycles as the planning baseline. Authorize discovery first. Do not enable live PMS writes or expand to multiple hotels until transaction integrity, tenant isolation, audit, rollback and hotel acceptance gates pass.
+Companion document: AI Hotel Platform Developer Phase-wise Development Plan, containing module boundaries, interfaces, implementation tasks, tests and technical acceptance criteria.
+10. Autonomous operating model: routine service without staff involvement
+The default objective is end-to-end autonomous handling of routine guest requests, including weekends and low-staffing periods. Staff involvement is an exception path, used when a request is outside approved scope, policy-sensitive, uncertain, high impact or blocked by a system failure.
+Normal path: listen → understand → check policy and sensitivity → plan → execute approved action → verify result → respond.
+Exception path: clarify, safely decline or retry when appropriate; if unresolved or high impact, create an exception record and notify the designated admin/staff member through WhatsApp.
+11. Voice and conversation quality loop
+Quality controls should monitor response latency, silence, speech pace, interruption handling, clarity, repeated clarification, successful resolution and guest sentiment where appropriate. The system may adapt within configured limits, but must not continue endless reprompts or conceal an unresolved request.
+12. Exception handling and WhatsApp notification
+Examples of exceptions include requests for restricted or private information, policy exceptions the agent is not authorized to grant, unsupported questions, repeated tool failures, conflicting source data, and unresolved booking outcomes. The system should politely explain what it can and cannot do, avoid fabricating an answer, and notify the configured responsible person when action is required.
+13. Operational boundaries
+No human approval is required for routine, in-policy actions that pass the configured validation and verification checks.
+Sensitive, private, unauthorized or out-of-scope questions receive a polite, policy-based refusal or a safe alternative.
+When information is unavailable, the agent says it cannot confirm the answer rather than guessing.
+For high-impact or unresolved exceptions, send a WhatsApp alert to the assigned role/person and track acknowledgement and closure. The platform should not assume that sending a message means it was read.
+The exception record should contain property, category, severity, concise summary, actions attempted, correlation/reference ID and required next step, while minimizing guest personal data.
+Booking changes, cancellations, refunds and other consequential actions remain limited to explicitly approved policies and verified backend capabilities.
+Quality thresholds, escalation triggers and alert recipients are configurable per hotel/property and must be tested before pilot.
+14. Latency-aware engagement and concurrent guest requests
+Design decision: the receptionist is one conversational agent, supported by a conversation orchestrator that can run multiple independent background tasks. A room availability lookup can continue while the guest asks about dining, amenities or hotel policies. The voice channel remains single-speaker: responses are arbitrated and spoken one at a time.
+The experience in practice
+Guest asks for a deluxe room for Friday. The system acknowledges promptly and starts the room search in the background.
+While that search is running, the guest asks about restaurants. The system retrieves approved dining information as a second task, without cancelling or restarting the room search.
+The receptionist answers the dining question when ready. When the room search completes, it provides the verified availability and rate. It does not speak two answers at once.
+If the guest interrupts, filler stops immediately and the new request takes priority. A result that arrives during speech is queued for a natural handoff.
+Management guardrails
+Use short, relevant, approved filler only when a wait is noticeable. Never force guests to listen to promotional content.
+A fast acknowledgement or holding line may be spoken before the lookup finishes; availability, rates and reservation confirmations must wait for authoritative verification.
+Read-only tasks such as approved dining information can usually run concurrently. Booking writes, cancellations and modifications require stricter state control, idempotency and reconciliation.
+Track end-to-end latency, time to first audio, task completion, interruption handling, stale results and whether the guest received a correct final answer.
+If a background task fails or becomes stale, communicate uncertainty honestly and follow the existing exception/WhatsApp notification rules where warranted.
+Success measure: the guest experiences a responsive, natural conversation while the system preserves booking accuracy, interruption control and auditability.
+15. Internal PMS: product scope and capability specification
+Product decision: the platform includes its own internally built PMS. It is not a mock adapter and is not dependent on OPERA Cloud/OHIP to perform core hotel operations. Our PMS owns the operational records for participating properties. Any later connection to an existing third-party PMS is a separate, explicitly approved integration or migration workstream.
+What the PMS will do
+Capability area
+ | Included capabilities
+ | Property & tenancy
+ | Hotel group/tenant and property setup; property identity, time zone, currency, language, policies, taxes/fees, contacts and service catalogue; strict data isolation.
+ | Room and inventory management
+ | Room types, physical rooms, capacity/occupancy rules, amenities, room status, sellable inventory by date, out-of-order/maintenance blocks, availability calendar and inventory change audit.
+ | Rates & restrictions
+ | Rate plans, seasonal/date-based rates, occupancy pricing, meal inclusions, taxes/fees, cancellation/deposit rules, minimum/maximum stay, closed-to-arrival/departure restrictions, blackout dates and quote validity.
+ | Reservations
+ | Quote, create, retrieve, amend, cancel, confirm, no-show and waitlist workflows; reservation reference; guest/stay/room/rate details; status state machine; idempotency, audit and reconciliation.
+ | Guest CRM
+ | Guest profile and contact details, consent/preferences where permitted, stay history, linked reservations, duplicate profile review and privacy/retention controls.
+ | Front desk
+ | Arrivals/departures, check-in/check-out, room assignment and reassignment, walk-ins, early/late check-in/out policy, in-house guest list, room moves and stay extensions.
+ | Folio, payments & billing
+ | Charges, adjustments, folios, invoices/receipts, deposit and payment status, refunds and reconciliation. Payment processing is via a compliant provider; do not store raw card details in the PMS.
+ | Housekeeping & maintenance
+ | Clean/dirty/inspected/occupied/vacant states, room readiness, cleaning tasks, maintenance tickets, out-of-order inventory blocks and return-to-service workflow.
+ | Guest services
+ | Property amenities, dining outlets, service hours, requests, issue tracking, service recovery, task assignment and status updates.
+ | Staff & access control
+ | Roles, permissions, property-scoped access, staff shifts/ownership, task queues, exception acknowledgement and auditable administrative actions.
+ | Reports & dashboards
+ | Occupancy, arrivals/departures, room availability, reservation production, revenue summaries, average daily rate (ADR), RevPAR where data supports it, cancellations/no-shows, housekeeping status and exception metrics.
+ | Integrations & communications
+ | AI receptionist tools, Twilio Voice/WhatsApp, notifications, export/import, payment-provider interface and optional future external PMS/channel/OTA integrations behind explicit adapters.
+ | Governance & reliability
+ | Audit trail, configuration versioning, data retention, backups/restore, access reviews, reconciliation jobs, operational alerts, environment separation and migration controls.
+ | Delivery priority: build the PMS in layers
+Release layer
+ | What becomes usable
+ | Boundary
+ | Core PMS / pilot foundation
+ | Property setup, room types/rooms, inventory calendar, rate plans/restrictions, quotes, reservations, lookup/amend/cancel, guest records, audit, staff dashboard and AI tool interface.
+ | Must be correct and operable before guest-facing booking is enabled.
+ | Hotel operations
+ | Front desk arrivals/departures, room assignment, housekeeping, maintenance, guest requests, folios/invoices and payment-provider integration.
+ | Roll out by property with staff acceptance and permissions.
+ | Advanced operations
+ | Expanded finance/reconciliation, richer analytics, integrations, automated reports, distribution/channel integrations and configurable workflows.
+ | Prioritize based on confirmed business needs; do not imply all are required for first pilot.
+ | Management-level success criteria
+The internal PMS is the single authoritative source for room inventory, sellable availability, rates, restrictions and reservation status for onboarded properties.
+The AI receptionist can only perform operations exposed by approved, typed PMS services; it cannot directly change database records.
+Every reservation mutation has a traceable actor/channel, timestamp, property scope, idempotency key and audit event.
+Availability and rates reflect room blocks, restrictions, occupancy, taxes/fees and current inventory rules before being quoted.
+Uncertain booking outcomes are reconciled before retrying or telling a guest that a reservation succeeded.
+Core guest journeys continue without staff for routine, in-policy cases; exceptions remain visible, durable and routed to the correct property team.
+The internal PMS is clearly distinguished from any future optional integration with an external PMS or channel manager.
+Important scope boundaries
+We are building a PMS, not merely a chatbot connected to a sample booking API. Seeded test data may be used in development, but production inventory and reservations will be real records in our internal PMS.
+Online travel agency distribution, channel-manager synchronization, accounting/ERP integration, advanced revenue management and native payment processing are not assumed to be part of the first release; they require explicit scope and provider decisions.
+Payment card data must be handled by a compliant payment provider. PMS stores payment references/status and permitted billing records, not raw card numbers or security codes.
+Before production, confirm local tax/invoice requirements, privacy/retention obligations, payment rules, cancellation policies and operational workflows for each property.
